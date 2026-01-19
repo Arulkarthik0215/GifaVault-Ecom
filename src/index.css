@@ -182,7 +182,7 @@
   }
 
   .product-card {
-    @apply bg-card overflow-hidden transition-all duration-500 group cursor-pointer;
+    @apply bg-card overflow-hidden transition-all duration-500 cursor-pointer;
   }
 
   .product-card:hover {
