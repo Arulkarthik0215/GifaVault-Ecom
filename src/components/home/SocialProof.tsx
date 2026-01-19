@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { Instagram, ArrowRight } from 'lucide-react';
+import { Instagram } from 'lucide-react';
 
 export const SocialProof = () => {
   return (
-    <section id="contact" className="py-24 bg-secondary/30">
+    <section className="py-24 bg-foreground text-background">
       <div className="container mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -11,55 +11,28 @@ export const SocialProof = () => {
           viewport={{ once: true }}
           className="max-w-2xl mx-auto"
         >
-          <Instagram className="w-12 h-12 text-gold mx-auto mb-6" />
+          <div className="w-16 h-16 border-2 border-background rounded-xl flex items-center justify-center mx-auto mb-6">
+            <Instagram className="w-8 h-8" />
+          </div>
           
-          <h2 className="section-heading mb-4">
-            Follow Our Journey
+          <h2 className="text-3xl md:text-4xl font-serif font-bold italic mb-4">
+            Join Our Community
           </h2>
           
-          <p className="text-muted-foreground mb-8">
-            Join our community of jewellery lovers. Get exclusive previews, 
-            styling tips, and behind-the-scenes content.
+          <p className="text-background/70 mb-8 text-lg">
+            Follow us on Instagram for new arrivals, behind-the-scenes 
+            content, and exclusive drops.
           </p>
           
           <a
-            href="https://instagram.com"
+            href="https://instagram.com/gifavault"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-primary inline-flex items-center gap-2 group"
+            className="inline-flex items-center gap-2 bg-background text-foreground px-8 py-4 rounded-full font-sans text-sm tracking-wide hover:opacity-90 transition-opacity"
           >
             <Instagram className="w-4 h-4" />
             @gifavault
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </a>
-        </motion.div>
-
-        {/* Trust Badges */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="mt-16 pt-16 border-t border-border"
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <p className="text-3xl font-serif text-gold mb-2">500+</p>
-              <p className="text-sm text-muted-foreground uppercase tracking-wider">Happy Customers</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-serif text-gold mb-2">100%</p>
-              <p className="text-sm text-muted-foreground uppercase tracking-wider">Authentic Products</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-serif text-gold mb-2">24/7</p>
-              <p className="text-sm text-muted-foreground uppercase tracking-wider">Customer Support</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-serif text-gold mb-2">Worldwide</p>
-              <p className="text-sm text-muted-foreground uppercase tracking-wider">Shipping Available</p>
-            </div>
-          </div>
         </motion.div>
       </div>
     </section>

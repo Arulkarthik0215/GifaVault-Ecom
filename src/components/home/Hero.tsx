@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import heroImage from '@/assets/hero-jewellery.jpg';
+import { ArrowRight, Instagram } from 'lucide-react';
+import heroImage from '@/assets/hero-collectibles.jpg';
 
 export const Hero = () => {
   return (
@@ -10,10 +10,10 @@ export const Hero = () => {
       <div className="absolute inset-0 z-0">
         <img
           src={heroImage}
-          alt="GIFA Vault Jewellery Collection"
+          alt="GIFA Vault Collectibles"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
       </div>
 
       {/* Content */}
@@ -23,20 +23,23 @@ export const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="section-subheading mb-4"
+            className="text-gold font-sans text-sm tracking-wider uppercase mb-4"
           >
-            Premium Jewellery Collection
+            Welcome to GIFA Vault
           </motion.p>
           
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-serif font-light leading-tight mb-6"
+            className="text-4xl md:text-6xl font-serif font-bold leading-tight mb-6 text-foreground drop-shadow-md"
+            style={{ textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
           >
-            Timeless Elegance,
+            Curated Collectibles
             <br />
-            <span className="text-gold">Crafted for You</span>
+            for the Modern
+            <br />
+            Enthusiast
           </motion.h1>
           
           <motion.p
@@ -45,8 +48,8 @@ export const Hero = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg text-muted-foreground mb-8 max-w-lg"
           >
-            Discover our curated collection of exquisite jewellery pieces, 
-            each designed to tell your unique story.
+            Discover rare Hot Wheels, premium die-cast models, and exclusive 
+            sets. Each piece in our vault is hand-selected for true collectors.
           </motion.p>
           
           <motion.div
@@ -55,26 +58,25 @@ export const Hero = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-wrap gap-4"
           >
-            <Link to="/products" className="btn-primary inline-flex items-center gap-2 group">
+            <Link 
+              to="/products" 
+              className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-4 rounded-full font-sans text-sm tracking-wide hover:opacity-90 transition-opacity group"
+            >
               Explore Collection
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link to="/#about" className="btn-outline">
-              Our Story
-            </Link>
+            <a 
+              href="https://instagram.com/gifavault"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-background border border-border text-foreground px-8 py-4 rounded-full font-sans text-sm tracking-wide hover:bg-secondary transition-colors"
+            >
+              <Instagram className="w-4 h-4" />
+              Follow Us
+            </a>
           </motion.div>
         </div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <div className="w-px h-16 bg-gradient-to-b from-transparent via-gold to-transparent animate-pulse" />
-      </motion.div>
     </section>
   );
 };
