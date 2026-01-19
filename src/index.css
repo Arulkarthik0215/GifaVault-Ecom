@@ -2,121 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap');
 
-/* GIFA Vault - Premium Jewellery Design System */
+/* GIFA Vault - Premium Collectibles Design System */
 
 @layer base {
   :root {
-    /* Core palette - warm luxury */
-    --background: 40 20% 98%;
-    --foreground: 30 10% 12%;
+    /* Core palette - clean modern */
+    --background: 0 0% 96%;
+    --foreground: 0 0% 13%;
 
-    --card: 40 30% 99%;
-    --card-foreground: 30 10% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
 
-    --popover: 40 30% 99%;
-    --popover-foreground: 30 10% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
 
-    /* Gold primary - the heart of jewellery */
-    --primary: 38 70% 45%;
-    --primary-foreground: 40 20% 98%;
+    /* Orange primary - vibrant accent */
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Champagne secondary */
-    --secondary: 38 30% 92%;
-    --secondary-foreground: 30 10% 20%;
+    /* Light gray secondary */
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 20%;
 
-    /* Soft cream muted */
-    --muted: 40 20% 94%;
-    --muted-foreground: 30 8% 45%;
+    /* Neutral muted */
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Rose gold accent */
-    --accent: 15 45% 70%;
-    --accent-foreground: 30 10% 12%;
+    /* Orange accent */
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 38 25% 88%;
-    --input: 38 25% 88%;
-    --ring: 38 70% 45%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 24 95% 53%;
 
-    --radius: 0.25rem;
+    --radius: 0.75rem;
 
     /* Custom tokens */
-    --gold: 38 70% 45%;
-    --gold-light: 38 60% 75%;
-    --gold-dark: 38 70% 35%;
-    --champagne: 38 40% 95%;
-    --charcoal: 30 10% 12%;
-    --cream: 40 30% 97%;
+    --gold: 24 95% 53%;
+    --gold-light: 24 90% 65%;
+    --gold-dark: 24 95% 43%;
+    --champagne: 0 0% 94%;
+    --charcoal: 0 0% 13%;
+    --cream: 0 0% 98%;
     --rose: 15 45% 70%;
 
     /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(38, 70%, 55%) 0%, hsl(38, 70%, 40%) 100%);
-    --gradient-shimmer: linear-gradient(90deg, transparent, hsla(38, 70%, 50%, 0.15), transparent);
-    --gradient-hero: linear-gradient(180deg, hsl(40, 20%, 98%) 0%, hsl(38, 30%, 95%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(24, 95%, 58%) 0%, hsl(24, 95%, 48%) 100%);
+    --gradient-shimmer: linear-gradient(90deg, transparent, hsla(24, 95%, 53%, 0.15), transparent);
+    --gradient-hero: linear-gradient(180deg, hsl(0, 0%, 96%) 0%, hsl(0, 0%, 94%) 100%);
 
     /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsla(30, 10%, 12%, 0.08);
-    --shadow-card: 0 8px 30px -8px hsla(30, 10%, 12%, 0.1);
-    --shadow-elevated: 0 20px 50px -12px hsla(30, 10%, 12%, 0.15);
+    --shadow-soft: 0 4px 20px -4px hsla(0, 0%, 0%, 0.06);
+    --shadow-card: 0 8px 30px -8px hsla(0, 0%, 0%, 0.08);
+    --shadow-elevated: 0 20px 50px -12px hsla(0, 0%, 0%, 0.12);
 
-    --sidebar-background: 40 20% 98%;
-    --sidebar-foreground: 30 10% 12%;
-    --sidebar-primary: 38 70% 45%;
-    --sidebar-primary-foreground: 40 20% 98%;
-    --sidebar-accent: 38 30% 92%;
-    --sidebar-accent-foreground: 30 10% 12%;
-    --sidebar-border: 38 25% 88%;
-    --sidebar-ring: 38 70% 45%;
+    --sidebar-background: 0 0% 96%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 93%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-ring: 24 95% 53%;
   }
 
   .dark {
-    --background: 30 15% 8%;
-    --foreground: 40 20% 95%;
+    --background: 0 0% 9%;
+    --foreground: 0 0% 95%;
 
-    --card: 30 12% 12%;
-    --card-foreground: 40 20% 95%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 30 12% 12%;
-    --popover-foreground: 40 20% 95%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 38 65% 55%;
-    --primary-foreground: 30 15% 8%;
+    --primary: 24 95% 55%;
+    --primary-foreground: 0 0% 9%;
 
-    --secondary: 30 12% 18%;
-    --secondary-foreground: 40 20% 95%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 30 10% 20%;
-    --muted-foreground: 40 15% 60%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 15 40% 50%;
-    --accent-foreground: 40 20% 95%;
+    --accent: 24 95% 55%;
+    --accent-foreground: 0 0% 9%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 10% 20%;
-    --input: 30 10% 20%;
-    --ring: 38 65% 55%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 24 95% 55%;
 
-    --gold: 38 65% 55%;
-    --gold-light: 38 55% 65%;
-    --gold-dark: 38 65% 45%;
-    --champagne: 30 15% 15%;
-    --charcoal: 40 20% 95%;
-    --cream: 30 12% 12%;
+    --gold: 24 95% 55%;
+    --gold-light: 24 85% 65%;
+    --gold-dark: 24 95% 45%;
+    --champagne: 0 0% 15%;
+    --charcoal: 0 0% 95%;
+    --cream: 0 0% 12%;
     --rose: 15 40% 50%;
 
-    --sidebar-background: 30 15% 8%;
-    --sidebar-foreground: 40 20% 95%;
-    --sidebar-primary: 38 65% 55%;
-    --sidebar-primary-foreground: 30 15% 8%;
-    --sidebar-accent: 30 12% 18%;
-    --sidebar-accent-foreground: 40 20% 95%;
-    --sidebar-border: 30 10% 20%;
-    --sidebar-ring: 38 65% 55%;
+    --sidebar-background: 0 0% 9%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 24 95% 55%;
+    --sidebar-primary-foreground: 0 0% 9%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 24 95% 55%;
   }
 }
 
