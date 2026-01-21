@@ -41,31 +41,8 @@ const Products = () => {
 
   return (
     <Layout>
-      {/* Page Header */}
-      <section className="pt-28 pb-8 sm:pt-32 sm:pb-12 bg-background">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-['Outfit'] text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground tracking-tight leading-tight mb-3"
-          >
-            All Products
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-muted-foreground max-w-2xl"
-          >
-            Browse our complete collection of die-cast collectibles, from classic Hot Wheels to
-            premium limited editions.
-          </motion.p>
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section className="py-6 border-y border-border bg-background sticky top-[60px] z-40">
+      {/* Filters - Sticky below header */}
+      <section className="pt-14 pb-4 sm:pt-16 sm:pb-6 bg-background sticky top-0 z-40 border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             {/* Search Bar */}
@@ -87,8 +64,8 @@ const Products = () => {
                   key={category.value}
                   onClick={() => handleCategoryChange(category.value)}
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${activeCategory === category.value
-                      ? 'bg-foreground text-background'
-                      : 'bg-secondary text-foreground hover:bg-muted'
+                    ? 'bg-foreground text-background'
+                    : 'bg-secondary text-foreground hover:bg-muted'
                     }`}
                 >
                   {category.label}
@@ -100,13 +77,13 @@ const Products = () => {
       </section>
 
       {/* Products Grid */}
-      <section className="py-12 sm:py-16">
+      <section className="py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm text-muted-foreground mb-8">
+          <p className="text-sm text-muted-foreground mb-6">
             {filteredProducts.length} products found
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredProducts.map((product, index) => (
               <ProductCard key={product.id} product={product} index={index} />
             ))}
