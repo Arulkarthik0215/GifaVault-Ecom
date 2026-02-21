@@ -1,16 +1,40 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Instagram, Share2, CheckCircle, Shield, Package } from 'lucide-react';
+import { ArrowLeft, Instagram, Share2, CheckCircle, Shield, Package, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
-import { getProductById, getFeaturedProducts, getCategoryLabel } from '@/data/products';
+import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
 
 const INSTAGRAM_URL = 'https://www.instagram.com/gifavault/';
 
+const categoryLabels: Record<string, string> = {
+  hotwheels: 'HOT WHEELS',
+  premium: 'PREMIUM',
+  sets: 'SETS',
+  matchbox: 'MATCHBOX',
+};
+
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(id || '');
-  const relatedProducts = getFeaturedProducts().filter((p) => p.id !== id).slice(0, 4);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    Promise.all([
+      getProductById(id),
+      getFeaturedProducts(),
+    ])
+      .then(([prod, featured]) => {
+        setProduct(prod);
+        setRelatedProducts(featured.filter((p) => String(p.id) !== id).slice(0, 4));
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const handleBuyOnInstagram = () => {
     window.open(INSTAGRAM_URL, '_blank', 'noopener,noreferrer');
@@ -26,16 +50,24 @@ const ProductDetail = () => {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (err) {
-        // User cancelled or error occurred
+      } catch {
         console.log('Share cancelled');
       }
     } else {
-      // Fallback: copy link to clipboard
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
     }
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -88,11 +120,17 @@ const ProductDetail = () => {
                   New Arrival
                 </span>
               )}
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
+              {product.image_url ? (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ImageIcon className="w-16 h-16 text-muted-foreground" />
+                </div>
+              )}
             </motion.div>
 
             {/* Product Info */}
@@ -104,7 +142,7 @@ const ProductDetail = () => {
             >
               {/* Category */}
               <p className="text-xs text-gold font-semibold tracking-wider uppercase mb-2">
-                {getCategoryLabel(product.category)}
+                {categoryLabels[product.category] || product.category.toUpperCase()}
               </p>
 
               {/* Product Name */}
@@ -124,8 +162,10 @@ const ProductDetail = () => {
 
               {/* Stock Status */}
               <div className="flex items-center gap-2 mb-8">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                <span className="text-emerald-500 font-medium text-sm">In Stock</span>
+                <span className={`w-2 h-2 rounded-full ${product.in_stock ? 'bg-emerald-500' : 'bg-red-400'}`} />
+                <span className={`font-medium text-sm ${product.in_stock ? 'text-emerald-500' : 'text-red-400'}`}>
+                  {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                </span>
               </div>
 
               {/* Buy on Instagram & Share Buttons */}

@@ -1,16 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import productRing from '@/assets/product-ring.jpg';
-import productChain from '@/assets/product-chain.jpg';
-import productBracelet from '@/assets/product-bracelet.jpg';
-import productEarrings from '@/assets/product-earrings.jpg';
 
 const categories = [
-  { name: 'Hot Wheels', image: productRing, href: '/products?category=hotwheels' },
-  { name: 'Premium', image: productChain, href: '/products?category=premium' },
-  { name: 'Sets', image: productBracelet, href: '/products?category=sets' },
-  { name: 'Matchbox', image: productEarrings, href: '/products?category=matchbox' },
+  { name: 'Hot Wheels', image: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&q=80', href: '/products?category=hotwheels' },
+  { name: 'Premium', image: 'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=600&q=80', href: '/products?category=premium' },
+  { name: 'Sets', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80', href: '/products?category=sets' },
+  { name: 'Matchbox', image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=600&q=80', href: '/products?category=matchbox' },
 ];
 
 export const Categories = () => {

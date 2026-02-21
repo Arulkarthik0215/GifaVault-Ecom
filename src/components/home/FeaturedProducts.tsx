@@ -1,11 +1,30 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import { getFeaturedProducts } from '@/data/products';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
 
 export const FeaturedProducts = () => {
-  const featured = getFeaturedProducts().slice(0, 4);
+  const [featured, setFeatured] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getFeaturedProducts()
+      .then(setFeatured)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-16 sm:py-20 md:py-24 bg-champagne flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </section>
+    );
+  }
+
+  if (featured.length === 0) return null;
 
   return (
     <section className="py-16 sm:py-20 md:py-24 bg-champagne">

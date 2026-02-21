@@ -1,33 +1,43 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { products, categories, ProductCategory } from '@/data/products';
+import { getAllProducts, Product, ProductCategory } from '@/lib/supabase';
+
+const categories: { value: ProductCategory | 'all'; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'hotwheels', label: 'Hot Wheels' },
+  { value: 'premium', label: 'Premium' },
+  { value: 'sets', label: 'Sets' },
+  { value: 'matchbox', label: 'Matchbox' },
+];
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category') as ProductCategory | 'all' | null;
   const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>(categoryParam || 'all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = useMemo(() => {
-    let result = products;
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await getAllProducts(activeCategory, searchQuery);
+        setProducts(data);
+      } catch (err) {
+        console.error('Failed to load products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (activeCategory !== 'all') {
-      result = result.filter((product) => product.category === activeCategory);
-    }
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter((product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query)
-      );
-    }
-
-    return result;
+    // Debounce search by 300ms
+    const timer = setTimeout(fetchProducts, searchQuery ? 300 : 0);
+    return () => clearTimeout(timer);
   }, [activeCategory, searchQuery]);
 
   const handleCategoryChange = (category: ProductCategory | 'all') => {
@@ -79,20 +89,29 @@ const Products = () => {
       {/* Products Grid */}
       <section className="py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm text-muted-foreground mb-6">
-            {filteredProducts.length} products found
-          </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {filteredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
-          </div>
-
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">No products found matching your criteria.</p>
+          {loading ? (
+            <div className="flex items-center justify-center py-24">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mb-6">
+                {products.length} products found
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {products.map((product, index) => (
+                  <ProductCard key={product.id} product={product} index={index} />
+                ))}
+              </div>
+
+              {products.length === 0 && (
+                <div className="text-center py-16">
+                  <p className="text-muted-foreground">No products found matching your criteria.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

@@ -20,7 +20,7 @@ const features = [
   {
     icon: Heart,
     title: 'Made with Love',
-    description: 'Our artisans pour passion into every piece, creating jewellery that tells stories.',
+    description: 'Our curators pour passion into every pick, sourcing die-cast collectibles that tell stories.',
   },
 ];
 
@@ -55,9 +55,9 @@ export const About = () => {
               transition={{ delay: 0.2 }}
               className="text-muted-foreground leading-relaxed mb-6"
             >
-              GIFA Vault is your destination for premium jewellery that celebrates 
-              life's precious moments. We believe that jewellery is more than just 
-              an accessory—it's a personal expression of style, love, and memories.
+              GIFA Vault is your destination for premium Hot Wheels and die-cast collectibles that celebrate
+              the thrill of collecting. We believe a great find is more than just a toy—
+              it's a piece of culture, nostalgia, and passion.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -66,8 +66,8 @@ export const About = () => {
               transition={{ delay: 0.3 }}
               className="text-muted-foreground leading-relaxed"
             >
-              Our curated collection features timeless designs crafted with exceptional 
-              quality, ensuring each piece becomes a cherished treasure for generations 
+              Our curated collection features timeless designs crafted with exceptional
+              quality, ensuring each piece becomes a cherished treasure for generations
               to come.
             </motion.p>
           </div>
