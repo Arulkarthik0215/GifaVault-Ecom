@@ -10,6 +10,7 @@ import {
     updateProduct, uploadProductImage, deleteProductImage,
     Product, ProductCategory
 } from '@/lib/supabase';
+import { compressImage } from '@/lib/imageUtils';
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
     { value: 'hotwheels', label: 'Hot Wheels' },
@@ -39,6 +40,7 @@ const AdminDashboard = () => {
     const [form, setForm] = useState(emptyForm);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
+    const [compressedSize, setCompressedSize] = useState<string>('');
     const [saving, setSaving] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -71,12 +73,22 @@ const AdminDashboard = () => {
         setTimeout(() => setToast(null), 3500);
     };
 
-    // ─── Image Handling ───────────────────────────────────────────────────────────
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ─── Image Handling (with compression) ─────────────────────────────────────
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        setImageFile(file);
-        setImagePreview(URL.createObjectURL(file));
+        try {
+            const compressed = await compressImage(file);
+            setImageFile(compressed);
+            setImagePreview(URL.createObjectURL(compressed));
+            const sizeKB = (compressed.size / 1024).toFixed(0);
+            setCompressedSize(`${sizeKB} KB`);
+        } catch {
+            // Fallback to original file if compression fails
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+            setCompressedSize('');
+        }
     };
 
     // ─── Open Form ────────────────────────────────────────────────────────────────
@@ -85,6 +97,7 @@ const AdminDashboard = () => {
         setForm(emptyForm);
         setImageFile(null);
         setImagePreview('');
+        setCompressedSize('');
         setShowForm(true);
     };
 
@@ -101,6 +114,7 @@ const AdminDashboard = () => {
         });
         setImageFile(null);
         setImagePreview(product.image_url || '');
+        setCompressedSize('');
         setShowForm(true);
     };
 
@@ -186,8 +200,8 @@ const AdminDashboard = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${toast.type === 'success'
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-red-500 text-white'
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-red-500 text-white'
                             }`}
                     >
                         {toast.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -287,8 +301,8 @@ const AdminDashboard = () => {
                                         </td>
                                         <td className="px-4 py-3 hidden md:table-cell">
                                             <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-medium ${product.in_stock
-                                                    ? 'bg-emerald-500/10 text-emerald-600'
-                                                    : 'bg-red-500/10 text-red-500'
+                                                ? 'bg-emerald-500/10 text-emerald-600'
+                                                : 'bg-red-500/10 text-red-500'
                                                 }`}>
                                                 {product.in_stock ? 'In Stock' : 'Out of Stock'}
                                             </span>
@@ -367,6 +381,11 @@ const AdminDashboard = () => {
                                             {imagePreview ? (
                                                 <>
                                                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                                    {compressedSize && (
+                                                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                                                            {compressedSize}
+                                                        </span>
+                                                    )}
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                                                         <Upload className="w-6 h-6 text-white" />
                                                     </div>
@@ -375,7 +394,7 @@ const AdminDashboard = () => {
                                                 <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground p-8">
                                                     <Upload className="w-8 h-8" />
                                                     <p className="text-sm font-medium">Click to upload image</p>
-                                                    <p className="text-xs">PNG, JPG, WebP up to 5MB</p>
+                                                    <p className="text-xs">PNG, JPG, WebP — auto-compressed to WebP</p>
                                                 </div>
                                             )}
                                         </div>

@@ -80,10 +80,11 @@ export const updateProduct = async (id: number, updates: Partial<Omit<Product, '
 // ─── Image Storage Helpers ────────────────────────────────────────────────────
 
 export const uploadProductImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
 
-    const { error } = await supabase.storage.from('product-images').upload(fileName, file);
+    const { error } = await supabase.storage.from('product-images').upload(fileName, file, {
+        contentType: 'image/webp',
+    });
     if (error) throw error;
 
     const { data } = supabase.storage.from('product-images').getPublicUrl(fileName);
