@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Instagram, Share2, CheckCircle, Shield, Package, Loader2, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Share2, CheckCircle, Shield, Package, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
 
-const INSTAGRAM_URL = 'https://www.instagram.com/gifavault/';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919080406205';
 
 const categoryLabels: Record<string, string> = {
   hotwheels: 'HOT WHEELS',
@@ -36,8 +36,11 @@ const ProductDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleBuyOnInstagram = () => {
-    window.open(INSTAGRAM_URL, '_blank', 'noopener,noreferrer');
+  const handleBuyOnWhatsApp = () => {
+    const productUrl = window.location.href;
+    const message = `Hi! I'm interested in buying *${product?.name}* (₹${product?.price.toLocaleString('en-IN')}).\nProduct link: ${productUrl}`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleShare = async () => {
@@ -168,14 +171,14 @@ const ProductDetail = () => {
                 </span>
               </div>
 
-              {/* Buy on Instagram & Share Buttons */}
+              {/* Buy on WhatsApp & Share Buttons */}
               <div className="flex items-center gap-3 mb-8">
                 <button
-                  onClick={handleBuyOnInstagram}
-                  className="flex items-center justify-center gap-2.5 bg-foreground text-background px-8 py-3 rounded-full font-medium text-sm hover:bg-foreground/90 transition-all min-w-[240px]"
+                  onClick={handleBuyOnWhatsApp}
+                  className="flex items-center justify-center gap-2.5 bg-[#25D366] text-white px-8 py-3 rounded-full font-medium text-sm hover:bg-[#1da851] transition-all min-w-[240px] shadow-md"
                 >
-                  <Instagram className="w-4 h-4" />
-                  Buy on Instagram
+                  <MessageCircle className="w-4 h-4" />
+                  Buy on WhatsApp
                 </button>
                 <button
                   onClick={handleShare}
