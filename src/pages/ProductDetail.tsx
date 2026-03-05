@@ -6,7 +6,7 @@ import { Layout } from '@/components/layout/Layout';
 import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919080406205';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '917598723389';
 
 const categoryLabels: Record<string, string> = {
   hotwheels: 'HOT WHEELS',
