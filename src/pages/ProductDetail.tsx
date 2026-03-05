@@ -5,6 +5,7 @@ import { ArrowLeft, MessageCircle, Share2, CheckCircle, Shield, Package, Loader2
 import { Layout } from '@/components/layout/Layout';
 import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
+import HowToBuyModal from '@/components/HowToBuyModal';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '917598723389';
 
@@ -169,6 +170,11 @@ const ProductDetail = () => {
                 <span className={`font-medium text-sm ${product.in_stock ? 'text-emerald-500' : 'text-red-400'}`}>
                   {product.in_stock ? 'In Stock' : 'Out of Stock'}
                 </span>
+              </div>
+
+              {/* How to Buy Guide */}
+              <div className="mb-6">
+                <HowToBuyModal />
               </div>
 
               {/* Buy on WhatsApp & Share Buttons */}
