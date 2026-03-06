@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MessageCircle, Share2, CheckCircle, Shield, Package, Loader2, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
 import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
@@ -38,6 +39,13 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleBuyOnWhatsApp = () => {
+    if (!product?.in_stock) {
+      toast.error('This product is currently out of stock', {
+        description: 'Please check back later or browse other products.',
+        duration: 3000,
+      });
+      return;
+    }
     const productUrl = window.location.href;
     const message = `Hi! I'm interested in buying *${product?.name}* (₹${product?.price.toLocaleString('en-IN')}).\nProduct link: ${productUrl}`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -181,10 +189,13 @@ const ProductDetail = () => {
               <div className="flex items-center gap-3 mb-8">
                 <button
                   onClick={handleBuyOnWhatsApp}
-                  className="flex items-center justify-center gap-2.5 bg-[#25D366] text-white px-8 py-3 rounded-full font-medium text-sm hover:bg-[#1da851] transition-all min-w-[240px] shadow-md"
+                  className={`flex items-center justify-center gap-2.5 px-8 py-3 rounded-full font-medium text-sm transition-all min-w-[240px] shadow-md ${product.in_stock
+                      ? 'bg-[#25D366] text-white hover:bg-[#1da851] cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-70'
+                    }`}
                 >
                   <MessageCircle className="w-4 h-4" />
-                  Buy on WhatsApp
+                  {product.in_stock ? 'Buy on WhatsApp' : 'Out of Stock'}
                 </button>
                 <button
                   onClick={handleShare}
