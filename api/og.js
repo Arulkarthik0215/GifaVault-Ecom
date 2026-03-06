@@ -1,5 +1,3 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
 export const config = {
     runtime: 'edge',
 };
@@ -7,7 +5,6 @@ export const config = {
 export default async function handler(request) {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
-
     const siteUrl = 'https://gifa-vault-ecom.vercel.app';
 
     if (!id) {
@@ -22,50 +19,49 @@ export default async function handler(request) {
     }
 
     try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        // Use Supabase REST API directly — no SDK needed
+        const res = await fetch(
+            `${supabaseUrl}/rest/v1/products?id=eq.${id}&select=*&limit=1`,
+            {
+                headers: {
+                    'apikey': supabaseAnonKey,
+                    'Authorization': `Bearer ${supabaseAnonKey}`,
+                },
+            }
+        );
 
-        const { data: product, error } = await supabase
-            .from('products')
-            .select('*')
-            .eq('id', id)
-            .single();
+        const products = await res.json();
+        const product = products?.[0];
 
-        if (error || !product) {
+        if (!product) {
             return Response.redirect(`${siteUrl}/product/${id}`, 302);
         }
 
         const productUrl = `${siteUrl}/product/${id}`;
         const imageUrl = product.image_url || `${siteUrl}/og-image.png`;
         const title = `${product.name} | GifaVault`;
-        const description = product.description || `Check out ${product.name} at GifaVault`;
-        const price = `₹${Number(product.price).toLocaleString('en-IN')}`;
+        const desc = (product.description || `Check out ${product.name} at GifaVault`).replace(/"/g, '&quot;');
+        const price = new Intl.NumberFormat('en-IN').format(product.price);
 
         const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
-  <meta name="description" content="${description}" />
-
   <meta property="og:title" content="${title}" />
-  <meta property="og:description" content="${price} — ${description}" />
+  <meta property="og:description" content="₹${price} — ${desc}" />
   <meta property="og:image" content="${imageUrl}" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
   <meta property="og:url" content="${productUrl}" />
   <meta property="og:type" content="product" />
   <meta property="og:site_name" content="GifaVault" />
-
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${title}" />
-  <meta name="twitter:description" content="${price} — ${description}" />
+  <meta name="twitter:description" content="₹${price} — ${desc}" />
   <meta name="twitter:image" content="${imageUrl}" />
-
   <meta http-equiv="refresh" content="0;url=${productUrl}" />
 </head>
 <body>
-  <p>Redirecting to <a href="${productUrl}">${product.name} on GifaVault</a>...</p>
+  <p>Redirecting to <a href="${productUrl}">${product.name}</a>...</p>
 </body>
 </html>`;
 
