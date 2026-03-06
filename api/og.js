@@ -1,24 +1,29 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-export default async function handler(req, res) {
-    const { id } = req.query;
+export const config = {
+    runtime: 'edge',
+};
+
+export default async function handler(request) {
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+
+    const siteUrl = 'https://gifa-vault-ecom.vercel.app';
 
     if (!id) {
-        res.redirect(302, '/');
-        return;
+        return Response.redirect(siteUrl, 302);
     }
 
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-        res.redirect(302, `/product/${id}`);
-        return;
+        return Response.redirect(`${siteUrl}/product/${id}`, 302);
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
     try {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
         const { data: product, error } = await supabase
             .from('products')
             .select('*')
@@ -26,21 +31,16 @@ export default async function handler(req, res) {
             .single();
 
         if (error || !product) {
-            res.redirect(302, `/product/${id}`);
-            return;
+            return Response.redirect(`${siteUrl}/product/${id}`, 302);
         }
 
-        const siteUrl = `https://gifa-vault-ecom.vercel.app`;
         const productUrl = `${siteUrl}/product/${id}`;
         const imageUrl = product.image_url || `${siteUrl}/og-image.png`;
         const title = `${product.name} | GifaVault`;
-        const description = product.description || `Check out ${product.name} at GifaVault — Premium Die-Cast Collectibles`;
+        const description = product.description || `Check out ${product.name} at GifaVault`;
         const price = `₹${Number(product.price).toLocaleString('en-IN')}`;
 
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.setHeader('Cache-Control', 'public, max-age=3600');
-
-        res.status(200).send(`<!DOCTYPE html>
+        const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -67,8 +67,16 @@ export default async function handler(req, res) {
 <body>
   <p>Redirecting to <a href="${productUrl}">${product.name} on GifaVault</a>...</p>
 </body>
-</html>`);
+</html>`;
+
+        return new Response(html, {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/html; charset=utf-8',
+                'Cache-Control': 'public, max-age=3600',
+            },
+        });
     } catch (err) {
-        res.redirect(302, `/product/${id}`);
+        return Response.redirect(`${siteUrl}/product/${id}`, 302);
     }
 }

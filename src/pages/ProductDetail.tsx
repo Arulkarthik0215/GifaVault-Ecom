@@ -38,6 +38,13 @@ const ProductDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Build the shareable URL that serves dynamic OG tags (product image, name, price)
+  // The API endpoint auto-redirects users to the actual product page
+  const getShareUrl = () => {
+    const origin = window.location.origin;
+    return `${origin}/api/og?id=${id}`;
+  };
+
   const handleBuyOnWhatsApp = () => {
     if (!product?.in_stock) {
       toast.error('This product is currently out of stock', {
@@ -46,17 +53,18 @@ const ProductDetail = () => {
       });
       return;
     }
-    const productUrl = window.location.href;
-    const message = `Hi! I'm interested in buying *${product?.name}* (₹${product?.price.toLocaleString('en-IN')}).\nProduct link: ${productUrl}`;
+    const shareUrl = getShareUrl();
+    const message = `Hi! I'm interested in buying *${product?.name}* (₹${product?.price.toLocaleString('en-IN')}).\nProduct link: ${shareUrl}`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleShare = async () => {
+    const shareUrl = getShareUrl();
     const shareData = {
       title: product?.name || 'GifaVault Product',
       text: `Check out ${product?.name} at GifaVault!`,
-      url: window.location.href,
+      url: shareUrl,
     };
 
     if (navigator.share) {
@@ -66,7 +74,7 @@ const ProductDetail = () => {
         console.log('Share cancelled');
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(shareUrl);
       alert('Link copied to clipboard!');
     }
   };
@@ -190,8 +198,8 @@ const ProductDetail = () => {
                 <button
                   onClick={handleBuyOnWhatsApp}
                   className={`flex items-center justify-center gap-2.5 px-8 py-3 rounded-full font-medium text-sm transition-all min-w-[240px] shadow-md ${product.in_stock
-                      ? 'bg-[#25D366] text-white hover:bg-[#1da851] cursor-pointer'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-70'
+                    ? 'bg-[#25D366] text-white hover:bg-[#1da851] cursor-pointer'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-70'
                     }`}
                 >
                   <MessageCircle className="w-4 h-4" />
