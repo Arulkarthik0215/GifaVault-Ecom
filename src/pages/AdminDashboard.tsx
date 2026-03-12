@@ -49,7 +49,7 @@ interface ContentSectionDef {
 const CONTENT_SECTIONS: ContentSectionDef[] = [
     {
         section: 'hero',
-        label: '🏠 Hero Section',
+        label: 'Hero Section',
         fields: [
             { key: 'hero_subtitle', label: 'Welcome Text', type: 'text', placeholder: 'Welcome to GIFA Vault' },
             { key: 'hero_heading', label: 'Main Heading (use \\n for line breaks)', type: 'textarea', placeholder: 'Curated Collectibles\nfor the Modern\nEnthusiast' },
@@ -61,7 +61,7 @@ const CONTENT_SECTIONS: ContentSectionDef[] = [
     },
     {
         section: 'trust_bar',
-        label: '✅ Trust Bar',
+        label: 'Trust Bar',
         fields: [
             { key: 'trust_item_1_title', label: 'Item 1 Title', type: 'text', placeholder: 'Authentic Products' },
             { key: 'trust_item_1_description', label: 'Item 1 Description', type: 'text', placeholder: '100% genuine collectibles' },
@@ -73,7 +73,7 @@ const CONTENT_SECTIONS: ContentSectionDef[] = [
     },
     {
         section: 'categories',
-        label: '📁 Categories Section',
+        label: 'Categories Section',
         fields: [
             { key: 'categories_subtitle', label: 'Section Subtitle', type: 'text', placeholder: 'Browse By Category' },
             { key: 'categories_heading', label: 'Section Heading', type: 'text', placeholder: 'Explore Our Collection' },
@@ -85,7 +85,7 @@ const CONTENT_SECTIONS: ContentSectionDef[] = [
     },
     {
         section: 'featured',
-        label: '⭐ Featured Products Section',
+        label: 'Featured Products Section',
         fields: [
             { key: 'featured_subtitle', label: 'Section Subtitle', type: 'text', placeholder: 'Featured' },
             { key: 'featured_heading', label: 'Section Heading', type: 'text', placeholder: 'Top Picks from The Vault' },
@@ -101,7 +101,7 @@ const CONTENT_SECTIONS: ContentSectionDef[] = [
     },
     {
         section: 'product_detail',
-        label: '🏷️ Product Detail Page',
+        label: 'Product Detail Page',
         fields: [
             { key: 'trust_badge_1', label: 'Trust Badge 1', type: 'text', placeholder: '100% Authentic Product' },
             { key: 'trust_badge_2', label: 'Trust Badge 2', type: 'text', placeholder: 'Quality Guaranteed' },
@@ -111,7 +111,7 @@ const CONTENT_SECTIONS: ContentSectionDef[] = [
     },
     {
         section: 'global',
-        label: '🌐 Global (Header / Footer / Social)',
+        label: 'Global (Header / Footer / Social)',
         fields: [
             { key: 'instagram_url', label: 'Instagram URL', type: 'text', placeholder: 'https://instagram.com/gifavault' },
             { key: 'instagram_handle', label: 'Instagram Handle', type: 'text', placeholder: '@gifavault' },
