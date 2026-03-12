@@ -134,9 +134,9 @@ const AdminDashboard = () => {
     const [showForm, setShowForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [form, setForm] = useState(emptyForm);
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string>('');
-    const [compressedSize, setCompressedSize] = useState<string>('');
+    // Multi-image state: each entry is { file?: File, preview: string, isExisting: boolean }
+    const [productImages, setProductImages] = useState<{ file?: File; preview: string; isExisting: boolean }[]>([]);
+    const [imageUploading, setImageUploading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -198,30 +198,38 @@ const AdminDashboard = () => {
         setTimeout(() => setToast(null), 3500);
     };
 
-    // ─── Image Handling (with compression) ─────────────────────────────────────
-    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    // ─── Multi-Image Handling (with compression) ─────────────────────────────────
+    const handleMultiImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        setImageUploading(true);
         try {
-            const compressed = await compressImage(file);
-            setImageFile(compressed);
-            setImagePreview(URL.createObjectURL(compressed));
-            const sizeKB = (compressed.size / 1024).toFixed(0);
-            setCompressedSize(`${sizeKB} KB`);
-        } catch {
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-            setCompressedSize('');
+            const newEntries: { file: File; preview: string; isExisting: boolean }[] = [];
+            for (let i = 0; i < files.length; i++) {
+                try {
+                    const compressed = await compressImage(files[i]);
+                    newEntries.push({ file: compressed, preview: URL.createObjectURL(compressed), isExisting: false });
+                } catch {
+                    newEntries.push({ file: files[i], preview: URL.createObjectURL(files[i]), isExisting: false });
+                }
+            }
+            setProductImages(prev => [...prev, ...newEntries]);
+        } finally {
+            setImageUploading(false);
+            // Reset the input so same file can be selected again
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
+    };
+
+    const removeProductImage = (index: number) => {
+        setProductImages(prev => prev.filter((_, i) => i !== index));
     };
 
     // ─── Open Form ────────────────────────────────────────────────────────────────
     const openAddForm = () => {
         setEditingProduct(null);
         setForm(emptyForm);
-        setImageFile(null);
-        setImagePreview('');
-        setCompressedSize('');
+        setProductImages([]);
         setShowForm(true);
     };
 
@@ -236,9 +244,17 @@ const AdminDashboard = () => {
             new: product.new,
             in_stock: product.in_stock,
         });
-        setImageFile(null);
-        setImagePreview(product.image_url || '');
-        setCompressedSize('');
+        // Load existing images into the multi-image state
+        const existingImages: { preview: string; isExisting: boolean }[] = [];
+        if (product.image_url) {
+            existingImages.push({ preview: product.image_url, isExisting: true });
+        }
+        if (product.additional_images?.length) {
+            product.additional_images.forEach(url => {
+                existingImages.push({ preview: url, isExisting: true });
+            });
+        }
+        setProductImages(existingImages);
         setShowForm(true);
     };
 
@@ -253,14 +269,31 @@ const AdminDashboard = () => {
         setSaving(true);
 
         try {
-            let image_url = editingProduct?.image_url || '';
+            // Determine which old images to delete (ones that were removed from the list)
+            const oldUrls: string[] = [];
+            if (editingProduct?.image_url) oldUrls.push(editingProduct.image_url);
+            if (editingProduct?.additional_images?.length) oldUrls.push(...editingProduct.additional_images);
+            const keptExistingUrls = productImages.filter(img => img.isExisting).map(img => img.preview);
+            const urlsToDelete = oldUrls.filter(url => !keptExistingUrls.includes(url));
 
-            if (imageFile) {
-                image_url = await uploadProductImage(imageFile);
-                if (editingProduct?.image_url) {
-                    await deleteProductImage(editingProduct.image_url);
+            // Delete removed images from storage
+            for (const url of urlsToDelete) {
+                await deleteProductImage(url);
+            }
+
+            // Upload new images and build final URL list
+            const allUrls: string[] = [];
+            for (const img of productImages) {
+                if (img.isExisting) {
+                    allUrls.push(img.preview);
+                } else if (img.file) {
+                    const url = await uploadProductImage(img.file);
+                    allUrls.push(url);
                 }
             }
+
+            const image_url = allUrls[0] || '';
+            const additional_images = allUrls.slice(1);
 
             const productData = {
                 name: form.name,
@@ -268,6 +301,7 @@ const AdminDashboard = () => {
                 category: form.category,
                 description: form.description,
                 image_url,
+                additional_images,
                 featured: form.featured,
                 new: form.new,
                 in_stock: form.in_stock,
@@ -297,6 +331,11 @@ const AdminDashboard = () => {
         try {
             await deleteProduct(product.id);
             if (product.image_url) await deleteProductImage(product.image_url);
+            if (product.additional_images?.length) {
+                for (const url of product.additional_images) {
+                    await deleteProductImage(url);
+                }
+            }
             showToast('Product deleted.', 'success');
             loadProducts();
         } catch {
@@ -726,39 +765,57 @@ const AdminDashboard = () => {
 
                                 {/* Form */}
                                 <form onSubmit={handleSave} className="px-6 py-5 space-y-5">
-                                    {/* Image Upload */}
+                                    {/* Multi-Image Upload */}
                                     <div>
-                                        <label className="block text-sm font-medium text-foreground mb-2">Product Image</label>
+                                        <label className="block text-sm font-medium text-foreground mb-2">
+                                            Product Images
+                                            <span className="text-xs text-muted-foreground font-normal ml-2">
+                                                First image = thumbnail
+                                            </span>
+                                        </label>
+
+                                        {/* Scrollable image strip */}
+                                        {productImages.length > 0 && (
+                                            <div className="flex gap-3 overflow-x-auto pb-3 mb-3 scrollbar-thin">
+                                                {productImages.map((img, idx) => (
+                                                    <div key={idx} className="relative flex-shrink-0 w-28 h-28 rounded-lg overflow-hidden border border-border group">
+                                                        <img src={img.preview} alt={`Image ${idx + 1}`} className="w-full h-full object-cover" />
+                                                        {idx === 0 && (
+                                                            <span className="absolute top-1 left-1 bg-foreground text-background text-[9px] font-bold px-1.5 py-0.5 rounded">
+                                                                MAIN
+                                                            </span>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeProductImage(idx)}
+                                                            className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Upload area */}
                                         <div
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-muted-foreground transition-colors"
-                                            style={{ aspectRatio: '16/9' }}
+                                            className={`border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-muted-foreground transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground p-6 ${imageUploading ? 'opacity-60 pointer-events-none' : ''}`}
                                         >
-                                            {imagePreview ? (
-                                                <>
-                                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                                                    {compressedSize && (
-                                                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
-                                                            {compressedSize}
-                                                        </span>
-                                                    )}
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                        <Upload className="w-6 h-6 text-white" />
-                                                    </div>
-                                                </>
+                                            {imageUploading ? (
+                                                <Loader2 className="w-6 h-6 animate-spin" />
                                             ) : (
-                                                <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground p-8">
-                                                    <Upload className="w-8 h-8" />
-                                                    <p className="text-sm font-medium">Click to upload image</p>
-                                                    <p className="text-xs">PNG, JPG, WebP — auto-compressed to WebP</p>
-                                                </div>
+                                                <Upload className="w-6 h-6" />
                                             )}
+                                            <p className="text-sm font-medium">{imageUploading ? 'Compressing...' : 'Click to add images'}</p>
+                                            <p className="text-xs">PNG, JPG, WebP — auto-compressed • Select multiple</p>
                                         </div>
                                         <input
                                             ref={fileInputRef}
                                             type="file"
                                             accept="image/*"
-                                            onChange={handleImageChange}
+                                            multiple
+                                            onChange={handleMultiImageChange}
                                             className="hidden"
                                         />
                                     </div>

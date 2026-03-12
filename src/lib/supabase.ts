@@ -16,6 +16,7 @@ export interface Product {
     category: ProductCategory;
     description: string;
     image_url: string;
+    additional_images: string[];
     featured: boolean;
     new: boolean;
     in_stock: boolean;

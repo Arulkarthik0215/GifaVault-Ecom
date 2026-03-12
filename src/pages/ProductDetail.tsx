@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MessageCircle, Share2, CheckCircle, Shield, Package, Loader2, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, MessageCircle, Share2, CheckCircle, Shield, Package, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
 import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
@@ -23,11 +23,18 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { getContent } = useSiteContent();
+
+  // Build all images array from product
+  const allImages = product
+    ? [product.image_url, ...(product.additional_images || [])].filter(Boolean)
+    : [];
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
+    setSelectedImageIndex(0);
     Promise.all([
       getProductById(id),
       getFeaturedProducts(),
@@ -125,32 +132,73 @@ const ProductDetail = () => {
 
           {/* Product Content */}
           <div className="grid md:grid-cols-12 gap-8 lg:gap-16 items-start">
-            {/* Product Image */}
+            {/* Product Image Gallery */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="md:col-span-5 relative aspect-square bg-secondary overflow-hidden rounded-xl max-w-md"
+              className="md:col-span-5 max-w-md"
             >
-              {/* Featured Badge on Image */}
-              {product.featured && (
-                <span className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-gold text-white text-xs font-semibold rounded-md shadow-lg">
-                  Featured
-                </span>
-              )}
-              {product.new && !product.featured && (
-                <span className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-emerald-500 text-white text-xs font-semibold rounded-md shadow-lg">
-                  New Arrival
-                </span>
-              )}
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="w-16 h-16 text-muted-foreground" />
+              {/* Main Image */}
+              <div className="relative aspect-square bg-secondary overflow-hidden rounded-xl mb-3">
+                {/* Featured Badge on Image */}
+                {product.featured && (
+                  <span className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-gold text-white text-xs font-semibold rounded-md shadow-lg">
+                    Featured
+                  </span>
+                )}
+                {product.new && !product.featured && (
+                  <span className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-emerald-500 text-white text-xs font-semibold rounded-md shadow-lg">
+                    New Arrival
+                  </span>
+                )}
+                {allImages.length > 0 ? (
+                  <img
+                    src={allImages[selectedImageIndex] || allImages[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-all duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="w-16 h-16 text-muted-foreground" />
+                  </div>
+                )}
+
+                {/* Arrow Navigation (only for multiple images) */}
+                {allImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setSelectedImageIndex(i => i === 0 ? allImages.length - 1 : i - 1)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedImageIndex(i => i === allImages.length - 1 ? 0 : i + 1)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-10"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Thumbnail Strip (only if multiple images) */}
+              {allImages.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {allImages.map((url, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImageIndex(idx)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === idx
+                        ? 'border-gold ring-1 ring-gold'
+                        : 'border-border hover:border-muted-foreground'
+                        }`}
+                    >
+                      <img src={url} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
                 </div>
               )}
             </motion.div>
