@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Mail } from 'lucide-react';
+import { useSiteContent } from '@/components/SiteContentContext';
 
 export const Footer = () => {
+  const { getContent } = useSiteContent();
+
   return (
     <footer className="bg-charcoal text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
@@ -15,8 +18,7 @@ export const Footer = () => {
               </span>
             </Link>
             <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-              Curated collectibles for the modern enthusiast.
-              Elevating the collecting experience from a hobby to a passion.
+              {getContent('footer_tagline', 'Curated collectibles for the modern enthusiast. Elevating the collecting experience from a hobby to a passion.')}
             </p>
           </div>
 
@@ -52,20 +54,20 @@ export const Footer = () => {
             </h4>
             <div className="space-y-3">
               <a
-                href="https://instagram.com/gifavault"
+                href={getContent('instagram_url', 'https://instagram.com/gifavault')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors"
               >
                 <Instagram className="w-4 h-4" />
-                @gifavault
+                {getContent('instagram_handle', '@gifavault')}
               </a>
               <a
-                href="mailto:contact@gifavault.com"
+                href={`mailto:${getContent('contact_email', 'contact@gifavault.com')}`}
                 className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                contact@gifavault.com
+                {getContent('contact_email', 'contact@gifavault.com')}
               </a>
             </div>
           </div>

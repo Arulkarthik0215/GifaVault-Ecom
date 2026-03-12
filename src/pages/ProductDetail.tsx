@@ -7,6 +7,7 @@ import { Layout } from '@/components/layout/Layout';
 import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
 import HowToBuyModal from '@/components/HowToBuyModal';
+import { useSiteContent } from '@/components/SiteContentContext';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '917598723389';
 
@@ -22,6 +23,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { getContent } = useSiteContent();
 
   useEffect(() => {
     if (!id) return;
@@ -218,15 +220,15 @@ const ProductDetail = () => {
               <div className="space-y-4 pt-4">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                  <span>100% Authentic Product</span>
+                  <span>{getContent('trust_badge_1', '100% Authentic Product')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Shield className="w-4 h-4 text-gold flex-shrink-0" />
-                  <span>Quality Guaranteed</span>
+                  <span>{getContent('trust_badge_2', 'Quality Guaranteed')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Package className="w-4 h-4 text-gold flex-shrink-0" />
-                  <span>Safe & Secure Packaging</span>
+                  <span>{getContent('trust_badge_3', 'Safe & Secure Packaging')}</span>
                 </div>
               </div>
             </motion.div>
@@ -236,7 +238,7 @@ const ProductDetail = () => {
           {relatedProducts.length > 0 && (
             <div className="mt-16 sm:mt-20">
               <h2 className="font-['Outfit'] text-xl sm:text-2xl font-semibold text-foreground tracking-tight text-center mb-8">
-                You May Also Like
+                {getContent('related_products_heading', 'You May Also Like')}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {relatedProducts.map((product, index) => (

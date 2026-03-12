@@ -1,15 +1,25 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { useSiteContent } from '@/components/SiteContentContext';
 
-const categories = [
-  { name: 'Hot Wheels', image: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&q=80', href: '/products?category=hotwheels' },
-  { name: 'Premium', image: 'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=600&q=80', href: '/products?category=premium' },
-  { name: 'Sets', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80', href: '/products?category=sets' },
-  { name: 'Matchbox', image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=600&q=80', href: '/products?category=matchbox' },
+const defaultImages = [
+  'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&q=80',
+  'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=600&q=80',
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+  'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=600&q=80',
 ];
 
 export const Categories = () => {
+  const { getContent } = useSiteContent();
+
+  const categories = [
+    { name: 'Hot Wheels', image: getContent('category_hotwheels_image', defaultImages[0]), href: '/products?category=hotwheels' },
+    { name: 'Premium', image: getContent('category_premium_image', defaultImages[1]), href: '/products?category=premium' },
+    { name: 'Sets', image: getContent('category_sets_image', defaultImages[2]), href: '/products?category=sets' },
+    { name: 'Matchbox', image: getContent('category_matchbox_image', defaultImages[3]), href: '/products?category=matchbox' },
+  ];
+
   return (
     <section className="py-16 sm:py-20 md:py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,7 +31,7 @@ export const Categories = () => {
             viewport={{ once: true }}
             className="text-gold font-medium text-xs sm:text-sm tracking-widest uppercase mb-3"
           >
-            Browse By Category
+            {getContent('categories_subtitle', 'Browse By Category')}
           </motion.p>
 
           <motion.h2
@@ -31,7 +41,7 @@ export const Categories = () => {
             transition={{ delay: 0.1 }}
             className="font-['Outfit'] text-3xl sm:text-4xl font-semibold text-foreground tracking-tight"
           >
-            Explore Our Collection
+            {getContent('categories_heading', 'Explore Our Collection')}
           </motion.h2>
         </div>
 

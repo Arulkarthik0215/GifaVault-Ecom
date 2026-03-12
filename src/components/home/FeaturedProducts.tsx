@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { getFeaturedProducts, Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { useSiteContent } from '@/components/SiteContentContext';
 
 export const FeaturedProducts = () => {
   const [featured, setFeatured] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { getContent } = useSiteContent();
 
   useEffect(() => {
     getFeaturedProducts()
@@ -38,7 +40,7 @@ export const FeaturedProducts = () => {
               viewport={{ once: true }}
               className="text-gold font-medium text-xs sm:text-sm tracking-widest uppercase mb-3"
             >
-              Featured
+              {getContent('featured_subtitle', 'Featured')}
             </motion.p>
 
             <motion.h2
@@ -48,7 +50,7 @@ export const FeaturedProducts = () => {
               transition={{ delay: 0.1 }}
               className="font-['Outfit'] text-3xl sm:text-4xl font-semibold text-foreground tracking-tight"
             >
-              Top Picks from The Vault
+              {getContent('featured_heading', 'Top Picks from The Vault')}
             </motion.h2>
           </div>
 

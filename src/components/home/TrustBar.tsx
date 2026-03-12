@@ -1,24 +1,27 @@
 import { Shield, Truck, Star } from 'lucide-react';
-
-const trustItems = [
-    {
-        icon: Shield,
-        title: 'Authentic Products',
-        description: '100% genuine collectibles',
-    },
-    {
-        icon: Truck,
-        title: 'Safe Delivery',
-        description: 'Carefully packed & shipped',
-    },
-    {
-        icon: Star,
-        title: 'Premium Selection',
-        description: 'Hand-picked rare finds',
-    },
-];
+import { useSiteContent } from '@/components/SiteContentContext';
 
 export const TrustBar = () => {
+    const { getContent } = useSiteContent();
+
+    const trustItems = [
+        {
+            icon: Shield,
+            title: getContent('trust_item_1_title', 'Authentic Products'),
+            description: getContent('trust_item_1_description', '100% genuine collectibles'),
+        },
+        {
+            icon: Truck,
+            title: getContent('trust_item_2_title', 'Safe Delivery'),
+            description: getContent('trust_item_2_description', 'Carefully packed & shipped'),
+        },
+        {
+            icon: Star,
+            title: getContent('trust_item_3_title', 'Premium Selection'),
+            description: getContent('trust_item_3_description', 'Hand-picked rare finds'),
+        },
+    ];
+
     return (
         <section className="py-10 sm:py-12 md:py-14 border-b border-zinc-200 bg-white">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">

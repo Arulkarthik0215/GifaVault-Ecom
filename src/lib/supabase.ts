@@ -96,3 +96,74 @@ export const deleteProductImage = async (imageUrl: string) => {
     if (!fileName) return;
     await supabase.storage.from('product-images').remove([fileName]);
 };
+
+// ─── Site Content (CMS) Types ─────────────────────────────────────────────────
+
+export interface SiteContent {
+    id: number;
+    key: string;
+    value: string;
+    section: string;
+    content_type: 'text' | 'image';
+}
+
+// ─── Site Content API Helpers ─────────────────────────────────────────────────
+
+export const getSiteContent = async (): Promise<Record<string, string>> => {
+    const { data, error } = await supabase
+        .from('site_content')
+        .select('*');
+    if (error) throw error;
+    const map: Record<string, string> = {};
+    (data as SiteContent[]).forEach((item) => {
+        map[item.key] = item.value;
+    });
+    return map;
+};
+
+export const getAllSiteContentRows = async (): Promise<SiteContent[]> => {
+    const { data, error } = await supabase
+        .from('site_content')
+        .select('*')
+        .order('section', { ascending: true });
+    if (error) throw error;
+    return data as SiteContent[];
+};
+
+export const updateSiteContent = async (key: string, value: string) => {
+    const { error } = await supabase
+        .from('site_content')
+        .update({ value })
+        .eq('key', key);
+    if (error) throw error;
+};
+
+export const upsertSiteContent = async (
+    key: string,
+    value: string,
+    section: string,
+    content_type: 'text' | 'image' = 'text'
+) => {
+    const { error } = await supabase
+        .from('site_content')
+        .upsert({ key, value, section, content_type }, { onConflict: 'key' });
+    if (error) throw error;
+};
+
+// ─── Site Image Storage Helpers ───────────────────────────────────────────────
+
+export const uploadSiteImage = async (file: File): Promise<string> => {
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
+    const { error } = await supabase.storage.from('site-images').upload(fileName, file, {
+        contentType: 'image/webp',
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from('site-images').getPublicUrl(fileName);
+    return data.publicUrl;
+};
+
+export const deleteSiteImage = async (imageUrl: string) => {
+    const fileName = imageUrl.split('/').pop();
+    if (!fileName) return;
+    await supabase.storage.from('site-images').remove([fileName]);
+};

@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
 import { Instagram } from 'lucide-react';
+import { useSiteContent } from '@/components/SiteContentContext';
 
 export const SocialProof = () => {
+  const { getContent } = useSiteContent();
+
   return (
     <section className="py-16 sm:py-20 md:py-24 bg-charcoal text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -18,24 +21,23 @@ export const SocialProof = () => {
 
           {/* Heading */}
           <h2 className="font-['Outfit'] text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-            Join Our Community
+            {getContent('social_heading', 'Join Our Community')}
           </h2>
 
           {/* Description */}
           <p className="text-white/60 text-base sm:text-lg mb-8 max-w-lg mx-auto">
-            Follow us on Instagram for new arrivals, behind-the-scenes
-            content, and exclusive drops.
+            {getContent('social_description', 'Follow us on Instagram for new arrivals, behind-the-scenes content, and exclusive drops.')}
           </p>
 
           {/* CTA Button */}
           <a
-            href="https://instagram.com/gifavault"
+            href={getContent('instagram_url', 'https://instagram.com/gifavault')}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white text-charcoal font-medium text-sm hover:bg-white/90 transition-colors"
           >
             <Instagram className="w-4 h-4" />
-            @gifavault
+            {getContent('instagram_handle', '@gifavault')}
           </a>
         </motion.div>
       </div>
