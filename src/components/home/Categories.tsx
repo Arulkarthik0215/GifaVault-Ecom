@@ -25,7 +25,49 @@ export const Categories = () => {
   const [categories, setCategories] = useState<Pick<Category, 'name' | 'slug' | 'image_url'>[]>(FALLBACK_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  // Mouse drag-to-scroll logic
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    if (!scrollRef.current) return;
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // scroll speed multiplier
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  // Auto-scroll infinite loop logic
+  useEffect(() => {
+    let animationId: number;
+    const scroll = () => {
+      if (scrollRef.current && !isHovered && !isDragging) {
+        scrollRef.current.scrollLeft += 1.25; // Speed (play with this for faster/slower)
+
+        // Seamless infinite loop: when we've scrolled half the container, reset to 0. 
+        // We duplicate the items 4x, so resetting at half is perfectly seamless.
+        if (scrollRef.current.scrollLeft >= scrollRef.current.scrollWidth / 2) {
+          scrollRef.current.scrollLeft = 0;
+        }
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+
+    animationId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animationId);
+  }, [isHovered, isDragging]);
 
   useEffect(() => {
     getAllCategories()
@@ -46,8 +88,8 @@ export const Categories = () => {
     href: `/products?category=${cat.slug}`,
   }));
 
-  // For infinite scroll we duplicate the list 3x
-  const marqueeItems = [...displayCategories, ...displayCategories, ...displayCategories];
+  // For infinite scroll we duplicate the list 4x to ensure enough content to cleanly reset halfway
+  const marqueeItems = [...displayCategories, ...displayCategories, ...displayCategories, ...displayCategories];
 
   return (
     <section className="py-16 sm:py-20 md:py-24 bg-background">
@@ -94,41 +136,35 @@ export const Categories = () => {
             ))}
           </div>
         ) : (
-          /* Infinite scroll marquee for 5+ categories */
+          /* Horizontal scroll slider for 5+ categories with auto-scroll */
           <div
-            className="overflow-hidden"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+            ref={scrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={() => { handleMouseLeave(); setIsHovered(false); }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onTouchStart={() => setIsHovered(true)}
+            onTouchEnd={() => setIsHovered(false)}
+            className={`flex gap-4 sm:gap-6 overflow-x-auto pb-6 -mb-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${isDragging ? 'cursor-grabbing select-none' : 'cursor-grab cursor-pointer'}`}
           >
-            <div
-              ref={scrollRef}
-              className="flex gap-4 sm:gap-6"
-              style={{
-                animation: `marquee-scroll ${displayCategories.length * 5}s linear infinite`,
-                animationPlayState: isPaused ? 'paused' : 'running',
-              }}
-            >
-              {marqueeItems.map((category, index) => (
-                <div
-                  key={`${category.slug}-${index}`}
-                  className="flex-shrink-0"
-                  style={{ width: 'clamp(200px, 22vw, 300px)' }}
-                >
-                  <CategoryCard category={category} />
-                </div>
-              ))}
-            </div>
+            {marqueeItems.map((category, index) => (
+              <motion.div
+                key={`${category.slug}-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: (index % displayCategories.length) * 0.1 }}
+                onClick={(e) => { if (isDragging) e.preventDefault(); }}
+                className="flex-shrink-0 pointer-events-auto"
+                style={{ width: 'clamp(240px, 60vw, 300px)' }}
+              >
+                <CategoryCard category={category} />
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
-
-      {/* Marquee animation keyframes */}
-      <style>{`
-        @keyframes marquee-scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
-        }
-      `}</style>
     </section>
   );
 };
