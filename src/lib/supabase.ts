@@ -5,9 +5,20 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// ─── Category Types ───────────────────────────────────────────────────────────
+
+export interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    image_url: string;
+    sort_order: number;
+    created_at: string;
+}
+
 // ─── Product Types ────────────────────────────────────────────────────────────
 
-export type ProductCategory = 'hotwheels' | 'premium' | 'sets' | 'matchbox';
+export type ProductCategory = string;
 
 export interface Product {
     id: number;
@@ -22,6 +33,44 @@ export interface Product {
     in_stock: boolean;
     created_at: string;
 }
+
+// ─── Category API Helpers ─────────────────────────────────────────────────────
+
+export const getAllCategories = async (): Promise<Category[]> => {
+    const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
+    if (error) throw error;
+    return data as Category[];
+};
+
+export const insertCategory = async (category: Omit<Category, 'id' | 'created_at'>) => {
+    const { data, error } = await supabase.from('categories').insert([category]).select().single();
+    if (error) throw error;
+    return data as Category;
+};
+
+export const updateCategory = async (id: number, updates: Partial<Omit<Category, 'id' | 'created_at'>>) => {
+    const { data, error } = await supabase.from('categories').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data as Category;
+};
+
+export const deleteCategory = async (id: number) => {
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) throw error;
+};
+
+export const uploadCategoryImage = async (file: File): Promise<string> => {
+    const fileName = `cat-${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
+    const { error } = await supabase.storage.from('site-images').upload(fileName, file, {
+        contentType: 'image/webp',
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from('site-images').getPublicUrl(fileName);
+    return data.publicUrl;
+};
 
 // ─── Product API Helpers ──────────────────────────────────────────────────────
 

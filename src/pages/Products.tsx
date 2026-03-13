@@ -4,23 +4,25 @@ import { motion } from 'framer-motion';
 import { Search, Loader2 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { getAllProducts, Product, ProductCategory } from '@/lib/supabase';
-
-const categories: { value: ProductCategory | 'all'; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'hotwheels', label: 'Hot Wheels' },
-  { value: 'premium', label: 'Premium' },
-  { value: 'sets', label: 'Sets' },
-  { value: 'matchbox', label: 'Matchbox' },
-];
+import { getAllProducts, getAllCategories, Product, Category } from '@/lib/supabase';
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryParam = searchParams.get('category') as ProductCategory | 'all' | null;
-  const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>(categoryParam || 'all');
+  const categoryParam = searchParams.get('category') || 'all';
+  const [activeCategory, setActiveCategory] = useState<string>(categoryParam);
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Load categories from DB
+  useEffect(() => {
+    getAllCategories()
+      .then(setCategories)
+      .catch(() => {
+        // Fallback: categories stay empty, only "All" tab shows
+      });
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -40,7 +42,7 @@ const Products = () => {
     return () => clearTimeout(timer);
   }, [activeCategory, searchQuery]);
 
-  const handleCategoryChange = (category: ProductCategory | 'all') => {
+  const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
     if (category === 'all') {
       setSearchParams({});
@@ -48,6 +50,12 @@ const Products = () => {
       setSearchParams({ category });
     }
   };
+
+  // Build filter buttons: "All" + dynamic categories
+  const filterButtons: { value: string; label: string }[] = [
+    { value: 'all', label: 'All' },
+    ...categories.map((c) => ({ value: c.slug, label: c.name })),
+  ];
 
   return (
     <Layout>
@@ -69,7 +77,7 @@ const Products = () => {
 
             {/* Category Filters */}
             <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
+              {filterButtons.map((category) => (
                 <button
                   key={category.value}
                   onClick={() => handleCategoryChange(category.value)}

@@ -10,22 +10,19 @@ import {
     updateProduct, uploadProductImage, deleteProductImage,
     Product, ProductCategory,
     getAllSiteContentRows, upsertSiteContent, uploadSiteImage, deleteSiteImage,
-    SiteContent
+    SiteContent,
+    getAllCategories, insertCategory, updateCategory, deleteCategory,
+    uploadCategoryImage, Category
 } from '@/lib/supabase';
 import { compressImage } from '@/lib/imageUtils';
 import { useSiteContent } from '@/components/SiteContentContext';
 
-const CATEGORIES: { value: ProductCategory; label: string }[] = [
-    { value: 'hotwheels', label: 'Hot Wheels' },
-    { value: 'premium', label: 'Premium' },
-    { value: 'sets', label: 'Sets' },
-    { value: 'matchbox', label: 'Matchbox' },
-];
+
 
 const emptyForm = {
     name: '',
     price: '',
-    category: 'hotwheels' as ProductCategory,
+    category: '' as ProductCategory,
     description: '',
     featured: false,
     new: false,
@@ -124,9 +121,20 @@ const CONTENT_SECTIONS: ContentSectionDef[] = [
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const catImageInputRef = useRef<HTMLInputElement>(null);
 
     // ─── Tab state ────────────────────────────────────────────────────────────────
-    const [activeTab, setActiveTab] = useState<'products' | 'content'>('products');
+    const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'content'>('products');
+
+    // ─── Category state ────────────────────────────────────────────────────────
+    const [dbCategories, setDbCategories] = useState<Category[]>([]);
+    const [catLoading, setCatLoading] = useState(false);
+    const [catSaving, setCatSaving] = useState(false);
+    const [editingCatId, setEditingCatId] = useState<number | null>(null);
+    const [editingCatName, setEditingCatName] = useState('');
+    const [newCatName, setNewCatName] = useState('');
+    const [newCatSlug, setNewCatSlug] = useState('');
+    const [catImageUploadingId, setCatImageUploadingId] = useState<number | null>(null);
 
     // ─── Product state ────────────────────────────────────────────────────────────
     const [products, setProducts] = useState<Product[]>([]);
@@ -410,6 +418,89 @@ const AdminDashboard = () => {
         }
     };
 
+    // ─── Load Categories ───────────────────────────────────────────────────────
+    const loadCategories = async () => {
+        setCatLoading(true);
+        try {
+            const data = await getAllCategories();
+            setDbCategories(data);
+        } catch {
+            showToast('Failed to load categories.', 'error');
+        } finally {
+            setCatLoading(false);
+        }
+    };
+
+    useEffect(() => { loadCategories(); }, []);
+
+    const handleAddCategory = async () => {
+        if (!newCatName.trim() || !newCatSlug.trim()) return;
+        setCatSaving(true);
+        try {
+            await insertCategory({
+                name: newCatName.trim(),
+                slug: newCatSlug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                image_url: '',
+                sort_order: dbCategories.length,
+            });
+            setNewCatName('');
+            setNewCatSlug('');
+            showToast('Category added!', 'success');
+            loadCategories();
+        } catch {
+            showToast('Failed to add category.', 'error');
+        } finally {
+            setCatSaving(false);
+        }
+    };
+
+    const handleUpdateCategoryName = async (id: number) => {
+        if (!editingCatName.trim()) return;
+        try {
+            await updateCategory(id, { name: editingCatName.trim() });
+            setEditingCatId(null);
+            showToast('Category updated!', 'success');
+            loadCategories();
+        } catch {
+            showToast('Failed to update category.', 'error');
+        }
+    };
+
+    const handleDeleteCategory = async (cat: Category) => {
+        if (dbCategories.length <= 4) {
+            showToast('Minimum 4 categories required.', 'error');
+            return;
+        }
+        if (!confirm(`Delete category "${cat.name}"? Products in this category won't be deleted but will need reassigning.`)) return;
+        try {
+            if (cat.image_url) await deleteSiteImage(cat.image_url);
+            await deleteCategory(cat.id);
+            showToast('Category deleted.', 'success');
+            loadCategories();
+        } catch {
+            showToast('Failed to delete category.', 'error');
+        }
+    };
+
+    const handleCatImageUpload = async (catId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setCatImageUploadingId(catId);
+        try {
+            const compressed = await compressImage(file);
+            const url = await uploadCategoryImage(compressed);
+            const existing = dbCategories.find(c => c.id === catId);
+            if (existing?.image_url) await deleteSiteImage(existing.image_url);
+            await updateCategory(catId, { image_url: url });
+            showToast('Category image updated!', 'success');
+            loadCategories();
+        } catch {
+            showToast('Failed to upload image.', 'error');
+        } finally {
+            setCatImageUploadingId(null);
+        }
+    };
+
     // ─── Logout ───────────────────────────────────────────────────────────────────
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -482,6 +573,19 @@ const AdminDashboard = () => {
                             </div>
                         </button>
                         <button
+                            onClick={() => setActiveTab('categories')}
+                            className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'categories'
+                                ? 'border-foreground text-foreground'
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                                }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4" />
+                                Categories
+                                <span className="text-xs bg-secondary px-1.5 py-0.5 rounded-full">{dbCategories.length}</span>
+                            </div>
+                        </button>
+                        <button
                             onClick={() => setActiveTab('content')}
                             className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'content'
                                 ? 'border-foreground text-foreground'
@@ -551,7 +655,7 @@ const AdminDashboard = () => {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 text-muted-foreground capitalize hidden sm:table-cell">
-                                                {CATEGORIES.find(c => c.value === product.category)?.label || product.category}
+                                                {dbCategories.find(c => c.slug === product.category)?.name || product.category}
                                             </td>
                                             <td className="px-4 py-3 font-medium text-foreground">
                                                 ₹{product.price.toLocaleString('en-IN')}
@@ -590,6 +694,140 @@ const AdminDashboard = () => {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+                </main>
+            )}
+
+            {/* ═══════════════════════════ CATEGORIES TAB ═══════════════════════════ */}
+            {activeTab === 'categories' && (
+                <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
+                    <div className="mb-6">
+                        <h2 className="font-['Outfit'] text-xl font-semibold text-foreground">Manage Categories</h2>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Add, rename, or delete collection categories. Minimum 4 required. First image = category card on homepage.
+                        </p>
+                    </div>
+
+                    {catLoading ? (
+                        <div className="flex items-center justify-center py-24">
+                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {dbCategories.map((cat) => (
+                                <div key={cat.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
+                                    {/* Image thumbnail + upload */}
+                                    <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-secondary group">
+                                        {cat.image_url ? (
+                                            <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                                            </div>
+                                        )}
+                                        <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                            {catImageUploadingId === cat.id ? (
+                                                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                            ) : (
+                                                <Upload className="w-4 h-4 text-white" />
+                                            )}
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => handleCatImageUpload(cat.id, e)}
+                                            />
+                                        </label>
+                                    </div>
+
+                                    {/* Name (editable) */}
+                                    <div className="flex-1 min-w-0">
+                                        {editingCatId === cat.id ? (
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={editingCatName}
+                                                    onChange={(e) => setEditingCatName(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateCategoryName(cat.id)}
+                                                    className="flex-1 px-3 py-1.5 bg-secondary border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                                    autoFocus
+                                                />
+                                                <button
+                                                    onClick={() => handleUpdateCategoryName(cat.id)}
+                                                    className="p-1.5 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                                                >
+                                                    <CheckCircle className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingCatId(null)}
+                                                    className="p-1.5 text-muted-foreground hover:bg-secondary rounded-lg transition-colors"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <p className="font-medium text-foreground text-sm truncate">{cat.name}</p>
+                                                <p className="text-xs text-muted-foreground">slug: {cat.slug}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Actions */}
+                                    {editingCatId !== cat.id && (
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => { setEditingCatId(cat.id); setEditingCatName(cat.name); }}
+                                                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+                                                title="Rename"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteCategory(cat)}
+                                                className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                title={dbCategories.length <= 4 ? 'Minimum 4 categories required' : 'Delete'}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Add new category */}
+                            <div className="p-4 rounded-xl border-2 border-dashed border-border">
+                                <p className="text-sm font-medium text-foreground mb-3">Add New Category</p>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Display name (e.g. Hot Wheels)"
+                                        value={newCatName}
+                                        onChange={(e) => {
+                                            setNewCatName(e.target.value);
+                                            // Auto-generate slug
+                                            setNewCatSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+                                        }}
+                                        className="flex-1 px-4 py-2.5 bg-secondary border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Slug (auto)"
+                                        value={newCatSlug}
+                                        onChange={(e) => setNewCatSlug(e.target.value)}
+                                        className="flex-1 sm:max-w-[180px] px-4 py-2.5 bg-secondary border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring font-mono"
+                                    />
+                                    <button
+                                        onClick={handleAddCategory}
+                                        disabled={catSaving || !newCatName.trim() || !newCatSlug.trim()}
+                                        className="px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                                    >
+                                        {catSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </main>
@@ -864,8 +1102,9 @@ const AdminDashboard = () => {
                                                 onChange={(e) => setForm({ ...form, category: e.target.value as ProductCategory })}
                                                 className="w-full px-4 py-2.5 bg-secondary border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                             >
-                                                {CATEGORIES.map((c) => (
-                                                    <option key={c.value} value={c.value}>{c.label}</option>
+                                                <option value="" disabled>Select a category</option>
+                                                {dbCategories.map((c) => (
+                                                    <option key={c.id} value={c.slug}>{c.name}</option>
                                                 ))}
                                             </select>
                                         </div>

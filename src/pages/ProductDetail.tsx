@@ -4,19 +4,12 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronLeft, ChevronRight, MessageCircle, Share2, CheckCircle, Shield, Package, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
-import { getProductById, getFeaturedProducts, Product } from '@/lib/supabase';
+import { getProductById, getFeaturedProducts, getAllCategories, Product, Category } from '@/lib/supabase';
 import { ProductCard } from '@/components/ui/ProductCard';
 import HowToBuyModal from '@/components/HowToBuyModal';
 import { useSiteContent } from '@/components/SiteContentContext';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '917598723389';
-
-const categoryLabels: Record<string, string> = {
-  hotwheels: 'HOT WHEELS',
-  premium: 'PREMIUM',
-  sets: 'SETS',
-  matchbox: 'MATCHBOX',
-};
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,12 +17,25 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [categories, setCategories] = useState<Category[]>([]);
   const { getContent } = useSiteContent();
+
+  // Build category label from dynamic categories
+  const getCategoryLabel = (slug: string) => {
+    const cat = categories.find(c => c.slug === slug);
+    return cat ? cat.name.toUpperCase() : slug.toUpperCase();
+  };
+
 
   // Build all images array from product
   const allImages = product
     ? [product.image_url, ...(product.additional_images || [])].filter(Boolean)
     : [];
+
+  // Load categories
+  useEffect(() => {
+    getAllCategories().then(setCategories).catch(() => { });
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -212,7 +218,7 @@ const ProductDetail = () => {
             >
               {/* Category */}
               <p className="text-xs text-gold font-semibold tracking-wider uppercase mb-2">
-                {categoryLabels[product.category] || product.category.toUpperCase()}
+                {getCategoryLabel(product.category)}
               </p>
 
               {/* Product Name */}
