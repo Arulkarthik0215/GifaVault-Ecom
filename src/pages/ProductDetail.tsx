@@ -9,7 +9,7 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import HowToBuyModal from '@/components/HowToBuyModal';
 import { useSiteContent } from '@/components/SiteContentContext';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '917598723389';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '916380250957';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
